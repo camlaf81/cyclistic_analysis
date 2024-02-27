@@ -1,5 +1,5 @@
-## Préparation des données
-### Importation des données dans BigQuery
+# Préparation des données
+## Importation des données dans BigQuery
 
 Chaque fichier correspond à un mois de données, organisées en 13 colonnes, chaque ligne correspondant à un trajet.
 
@@ -11,7 +11,7 @@ Pour chaque propriété, je définis les types de données suivants :
 
 12 tables sont ainsi créées : `cyclistic_original_data.data_202208` à `cyclistic_original_data.data_202307`
 
-### Rassemblement des données dans une table unique
+## Rassemblement des données dans une table unique
 
 Pour ne pas avoir à multiplier les étapes pour chaque mois, je regroupe toutes les données dans une unique table grâce à une instruction **UNION ALL** :
 
@@ -81,11 +81,11 @@ Le résultat de la requête est enregistré dans une nouvelle table `cyclistic_m
 
 
 
-## Nettoyage des données
+# Nettoyage des données
 
 Dans cette opération, je vérifie l'absence de doublons ainsi que le contenu des différentes colonnes.
 
-### Suppression des doublons
+## Suppression des doublons
 Je vérifie par une requête simple s'il existe des doublons :
 ```sql
 SELECT
@@ -94,8 +94,8 @@ FROM cyclistic_merge_data.full_data
 ```
 La requête retourne 5 723 606 ce qui est le nombre d'entrées dans la table : il n'y a donc pas de doublon à supprimer.
 
-### Vérification du contenu des colonnes
-#### rideable_type
+## Vérification du contenu des colonnes
+### rideable_type
 Trois types de vélos sont disponibles à la location.
 ```sql
 SELECT
