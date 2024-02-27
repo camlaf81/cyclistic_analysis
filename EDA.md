@@ -96,7 +96,7 @@ La requête retourne 5 723 606 ce qui est le nombre d'entrées dans la table : i
 
 ## Vérification du contenu des colonnes
 ### rideable_type
-Trois types de vélos sont disponibles à la location.
+Trois types de vélos sont disponibles à la location : classique, électrique et cargo.
 ```sql
 SELECT
   rideable_type AS bike_type,
@@ -107,6 +107,7 @@ GROUP BY
   rideable_type
 ```
 ![query result](img/rideable_type.png)
-Le résultat de la requête est conforme et il n'y a pas de valeurs nulles.
+
+Le résultat de la requête est conforme (trois types de vélos) et il n'y a pas de valeurs nulles.
 
 
