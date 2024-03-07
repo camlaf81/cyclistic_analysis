@@ -382,3 +382,121 @@ GROUP BY
 Il y a bien deux types d’utilisateurs dans la table, pas de valeurs nulles.
 
 
+
+## Création d'une table contenant les données nettoyées
+Sur la base des observations précédentes, je crée une table avec les données nettoyées. Je choisis de ne conserver que les données qui seront utiles à l’analyse :
+- clé primaire : `ride_id`
+- type de vélo : `rideable_type`
+- date et heure du début de la location : `started_at`
+- informations géographiques sur le trajet : `start_lat`, `start_lng`, `end_lat`, `end_lng`
+- type d’utilisateur : `member_casual`
+
+Je remplace la colonne ended_at par une colonne duration égale à la durée de la location. C’est complexe car les objets `TIME` ne peuvent excéder 24h. Il faut donc créer une string.
+
+*Remarque a posteriori : j’aurais pu créer un objet* `INTERVAL` *qui peut ensuite être formaté à l’envie au moment de l’extraction des données pour leur analyse dans Google Sheets.*
+
+
+### Travail sur une sous-requête pour le formatage d’un `INTERVAL`
+Cet interval est issu de la différence `ended_at - started_at`.
+
+**Requête avec sous-requête**
+Pour récupérer les heures, minutes, secondes individuellement à partir de l’INTERVAL :
+
+*NB : Dans cette requête, j’utilise* `CAST(minutes AS STRING FORMAT '00')` *pour que les minutes s’affichent toujours avec deux chiffres (e.g. 07).*
+
+```sql
+SELECT
+  CAST(days*24+hours AS STRING),
+  CAST(minutes AS STRING FORMAT '00'),
+  CAST(seconds AS STRING FORMAT '00')
+FROM(
+  SELECT
+    EXTRACT(DAY FROM ended_at-started_at) AS days,
+    EXTRACT(HOUR FROM ended_at-started_at) AS hours,
+    EXTRACT(MINUTE FROM ended_at - started_at) AS minutes,
+    EXTRACT(SECOND FROM ended_at - started_at) AS seconds,
+  FROM
+    cyclistic_merge_data.full_data
+  LIMIT 10
+)
+```
+![query result](img/interval__work.png)
+
+
+Pour maintenant en faire une `STRING` avec chaque valeur séparée par `:` comme on l’attend pour l’affichage d’une durée :
+
+*NB : Le* `FORMAT '00'` ajoute un espace avant la valeur, j’utilise donc la fonction `TRIM` pour le supprimer `TRIM(CAST(minutes AS STRING FORMAT '00'))`
+
+```sql
+SELECT
+  CONCAT(
+  CAST(days*24+hours AS STRING),
+  ":",
+  TRIM(CAST(minutes AS STRING FORMAT '00')),
+  ":",
+  TRIM(CAST(seconds AS STRING FORMAT '00'))) AS duration
+FROM(
+  SELECT
+    EXTRACT(DAY FROM ended_at-started_at) AS days,
+    EXTRACT(HOUR FROM ended_at-started_at) AS hours,
+    EXTRACT(MINUTE FROM ended_at - started_at) AS minutes,
+    EXTRACT(SECOND FROM ended_at - started_at) AS seconds,
+  FROM
+    cyclistic_merge_data.full_data
+  LIMIT 10
+)
+```
+![query result](img/interval__result.png)
+
+
+### Requête complète pour la création de la table des données nettoyées
+Je peux maintenant créer la table des données nettoyées. Pour cela, j’ajoute un `JOIN` pour lier le résultat de la sous-requête précédente (qui génère une string duration) aux autres données.
+Dans la clause `WHERE`, j’indique toutes les conditions qui sont nécessaires pour nettoyer les données, tel que cela a été identifié précédemment. Enfin, j’ordonne les données par date croissante :
+
+```sql
+SELECT
+  full_data.ride_id,
+  rideable_type,
+  member_casual AS user_type,
+  CAST(started_at AS TIMESTAMP) AS start_time,
+  CONCAT(
+    CAST(days*24+hours AS STRING),
+    ":",
+    TRIM(CAST(minutes AS STRING FORMAT '00')),
+    ":",
+    TRIM(CAST(seconds AS STRING FORMAT '00'))) AS duration,
+  start_lat,
+  start_lng,
+  end_lat,
+  end_lng,
+
+
+FROM(
+  SELECT
+    ride_id,
+    EXTRACT(DAY FROM ended_at - started_at) AS days,
+    EXTRACT(HOUR FROM ended_at - started_at) AS hours,
+    EXTRACT(MINUTE FROM ended_at - started_at) AS minutes,
+    EXTRACT(SECOND FROM ended_at - started_at) AS seconds,
+  FROM
+    cyclistic_merge_data.full_data
+) AS time_data
+
+
+JOIN
+  cyclistic_merge_data.full_data AS full_data
+ON full_data.ride_id = time_data.ride_id
+
+
+WHERE
+  end_lat > 0
+  AND end_lng < 0
+  AND ended_at > started_at
+  AND ended_at - started_at <= MAKE_INTERVAL(0, 0, 1, 1, 0, 0) # 1 day + 1 hour
+ORDER BY
+  start_time
+```
+
+Il reste 5 716 768 entrées dans la table. Je sauvegarde le résultat de cette requête sous forme d’une nouvelle table nommée `cyclistic_clean_data.clean_data`.
+
+
