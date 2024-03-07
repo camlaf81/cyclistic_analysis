@@ -46,7 +46,7 @@ J'exporte les résultats de cette requête en CSV pour les étudier dans Sheets.
 ### <ul><li>Utilisateurs</ul></li>
 On peut regarder la répartition des trajets selon le type d'utilisateurs :
 
-![graph](img/EDA/users.png)
+<img src="img/EDA/users.png" width=40%>
 
 Près de 40% des trajets sont effectués par des utilisateurs occasionnels. Il y a donc une marge d’évolution considérable pour fédérer de nouveaux abonnés annuels.
 
@@ -54,8 +54,7 @@ Près de 40% des trajets sont effectués par des utilisateurs occasionnels. Il y
 
 Pour chaque catégorie d’utilisateurs, on peut regarder l’utilisation des différents types de vélos.
 
-![graph](img/EDA/bike_distribution__members.png)
-![graph](img/EDA/bike_distribution__casual.png)
+<img src="img/EDA/bike_distribution__members.png" width=40%> <img src="img/EDA/bike_distribution__casual.png" width=40%>
 
 Ce sont majoritairement les vélos électriques qui sont utilisés chez les utilisateurs occasionnels. Ces utilisateurs sont également les seuls à utiliser des vélos cargo (“docked bike”). *NB : Peut-être que ces vélos ne sont pas ouverts à la location dans le cadre de l’abonnement annuel, ce qui expliquerait l’absence totale de vélos cargo utilisés par les abonnés.*
 
