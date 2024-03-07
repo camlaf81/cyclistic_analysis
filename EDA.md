@@ -260,12 +260,377 @@ Par conséquent, je fais les modifications suivantes :
 Je peux maintenant commencer l’analyse des données.
 
 
+### <ul><li>Profil horaire pour les utilisateurs en fonction des jours de la semaine</ul></li>
+NB : Il s’agit d’une somme du nombre de trajets sur l’année entière.
+
+<img src="img/EDA/Hourly number of rides for members.png" width=70%>
+<img src="img/EDA/Hourly number of rides for casual users.png" width=70%>
+
+En regardant la somme des trajets sur l’année, on confirme très nettement l’usage des **membres** pour les trajets domicile-travail (pics à 8h et 16-17h) du lundi au vendredi, ainsi que pour des trajets loisirs les vendredis soirs (à partir de 22h le profil est différent des autres jours de la semaine) et durant les week-ends.
+
+Pour les **utilisateurs occasionnels**, on voit également un profil avec des pics autour de 8h et 17-18h, mais dans une moindre mesure (le pic du matin est très faible). Il y a en revanche davantage d’utilisation durant les week-ends (vendredis soirs, samedis et dimanches).
+
+
+### <ul><li>Evaluation de l'impact des saisons</ul></li>
+On considère les mois où l’utilisation est la plus faible : décembre, janvier et février (hiver) et les mois où elle est la plus élevée : juin, juillet, août (été). Les données sont donc sommées sur trois mois.
+
+#### *Hiver*
+<img src="img/EDA/Hourly number of rides during Winter for members.png" width=70%>
+<img src="img/EDA/Hourly number of rides during Winter for casual users.png" width=70%>
+
+Durant l’hiver, les utilisateurs occasionnels réduisent fortement l’utilisation pour les loisirs.
+
+On remarque même une situation encore plus marquée sur le mois de décembre : 
+<img src="img/EDA/Hourly number of rides in December for members.png" width=70%>
+<img src="img/EDA/Hourly number of rides in December for casual users.png" width=70%>
+
+
+#### *Eté*
+NB : Je ne considère pas le mois d’août pour faire la somme car il s’agit d’août 2022, il n’y aurait donc pas de continuité temporelle entre les données avec les mois de juin et juillet 2023.
+
+Pendant l’été 2023 (juin, juillet) :
+<img src="img/EDA/Hourly number of rides in Summer for members.png" width=70%>
+<img src="img/EDA/Hourly number of rides in Summer for casual users.png" width=70%>
+
+On observe les mêmes différences selon le type d’utilisateurs. L’utilisation pour les loisirs est plus importante qu’en hiver.
+
+
+### <ul><li>Distance moyenne parcourue</ul></li>
+Pour finir, on regarde si l’on voit des profils horaires significatifs en ce qui concerne les distances parcourues par trajet (i.e. distances séparant les stations de départ et d’arrivée) :
+<img src="img/EDA/Hourly average ride distance for members.png" width=70%>
+<img src="img/EDA/Hourly average ride distance for casual users.png" width=70%>
+
+En semaine, pour les abonnés annuels, on constate que les trajets effectués en milieu de journée (9h-16h) sont plus courts (ca. 1700-2000 m) que ceux effectués durant les pics d’utilisation liés aux trajets domicile-travail (ca. 2000-2200 m).
+
+Durant les week-ends, les trajets sont plus longs en journée, en comparaison avec les jours de semaine, quel que soit le type d’usager.
+
+Il serait intéressant de regarder la localisation des stations de départ et d’arrivée dans des cas précis :
+- en semaine à 8h, 12h, 17h
+- le samedi à 15h
+et essayer de corréler ces données avec les données géographiques et économiques : localisation de zones de bureaux, de zones commerciales/de restauration, de zones résidentielles et prendre en compte les plateformes multimodales (train, métro).
 
 
 
 
 
+## Prérequis pour l’analyse géographique des trajets
+La difficulté réside en ce que les coordonnées géographiques des stations ne sont pas toutes données avec la même précision. Je vais chercher les données des stations sur le portail de données ouvertes de la ville de Chicago
+https://data.cityofchicago.org/Transportation/Divvy-Bicycle-Stations/bbyy-e7gq/data
 
-### <ul><li>Nombre de trajets</ul></li>
+Il existe d’après ces données officielles 1419 stations distinctes (noms distincts et ID distincts).
+
+Dans le jeu de données nettoyées, le nombre de stations distinctes est supérieur à ce qui apparaît dans la table des stations !
+
+```sql
+WITH clean_data AS
+  (
+  SELECT
+    *
+  FROM
+    cyclistic_merge_data.full_data
+  WHERE
+    end_lat > 0
+    AND end_lng < 0
+    AND ended_at > started_at
+    AND ended_at - started_at <= MAKE_INTERVAL(0, 0, 1, 1, 0, 0) # 1 day + 1 hour
+  )
+
+SELECT
+  COUNT(DISTINCT(clean_data.start_station_name)) AS start_stations,
+  COUNT(DISTINCT(clean_data.end_station_name)) AS end_stations
+FROM
+  clean_data
+```
+![request result](img/EDA/stations_from_data.png)
+
+
+*NB : dans la requête, je suis reparti de la table* `cyclistic_merge_data.full_data` *car dans la table* `cyclistic_clean_data.clean_data` *j’ai supprimé les informations de noms ou ID de stations.*
+
+Attention, il y a également de très nombreux enregistrements avec des valeurs _null_ pour les stations de départ ou d’arrivée (`*_station_name` ou `*_station_id`) :
+
+```sql
+WITH clean_data AS
+  (
+  SELECT
+    *
+  FROM
+    cyclistic_merge_data.full_data
+  WHERE
+    end_lat > 0
+    AND end_lng < 0
+    AND ended_at > started_at
+    AND ended_at - started_at <= MAKE_INTERVAL(0, 0, 1, 1, 0, 0) # 1 day + 1 hour
+  )
+
+SELECT
+  COUNTIF(clean_data.start_station_name IS NULL) AS null_start_name,
+  COUNTIF(clean_data.start_station_id IS NULL) AS null_start_id,
+  COUNTIF(clean_data.end_station_name IS NULL) AS null_end_name,
+  COUNTIF(clean_data.end_station_id IS NULL) AS null_end_id,
+FROM
+  clean_data
+```
+![request result](img/EDA/stations_null.png)
+
+
+Cela représente une fraction très importante des données nettoyées : **1 376 546 entrées** avec une valeur _null_ dans `start_station_name` ou `end_station_name`, soit **24% des données** !
+
+C’est particulièrement surprenant car dans l’étape de nettoyage des données, j’ai supprimé les données pour lesquelles les coordonnées géographiques sont nulles ou égales à zéro (et cela ne représentait que 6112 enregistrements). Il y a donc un très grand nombre d’enregistrements pour lesquels des coordonnées géographiques sont renseignées mais pas les noms de station. 
+
+_Dans une situation réelle, il faudrait trouver la raison pour laquelle on a ces enregistrements : s’agit-il d’un bug du système qui ne renseigne pas les stations correctement ? est-ce que cela correspond à des vélos qui seraient retrouvés en-dehors des stations ??_
+
+
+### <ul><li>Identification des stations de départ et arrivée</ul></li>
+J’essaie sur les enregistrements restants d’identifier correctement les stations de départ et d’arrivée. Problème : les identifiants des stations dans la table des trajets ne correspondent pas aux identifiants officiels des stations, il est donc impossible de les utiliser. J’essaye donc de me baser sur les noms des stations et j’explore les données pour voir quels sont les problèmes dans les noms de stations par rapport aux noms officiels. Si je ne fais pas cette étape, je ne pourrai pas arriver à une visualisation de la géographie des trajets car il me sera impossible de faire une agrégation par station.
+
+Je crée une table `stations.stations_summary` avec les noms de stations tels qu’ils existent en tant que `start_station_name` des données originales et la correspondance `ID` issue de la liste officielle des stations du portail open data de la ville de Chicago. Pour créer cette table, j’ai inspecté minutieusement les noms des stations et corrigé ce qui pouvait l’être. Lorsque j’importe la table dans BigQuery, je rends les champs `station_name` et `station_ID` requis ce qui supprime d’office les éventuelles valeurs nulles.
+
+En complément, j’importe la table de la liste officielle des stations trouvée sur le portail open data de la ville de Chicago : `table stations.stations_list`.
+
+J’essaie de faire un `JOIN` sur les **stations de départ** pour vérification :
+
+```sql
+WITH stations_coord AS
+  (SELECT
+    list.ID,
+    list.Station_Name,
+    list.Latitude,
+    list.Longitude
+  FROM
+    stations.stations_list AS list
+  JOIN
+    stations.stations_summary AS summary
+  ON
+    list.ID = summary.station_ID
+  )
+
+SELECT
+  merge_data.ride_id,
+  merge_data.start_station_name,
+  merge_data.start_lat,
+  merge_data.start_lng,
+  stations_coord.Station_Name,
+  stations_coord.Latitude,
+  stations_coord.Longitude
+FROM
+  cyclistic_merge_data.full_data AS merge_data
+JOIN
+  stations_coord
+ON
+  stations_coord.Station_Name = merge_data.start_station_name
+WHERE
+  end_lat > 0
+  AND end_lng < 0
+  AND ended_at > started_at
+  AND ended_at - started_at <= MAKE_INTERVAL(0, 0, 1, 1, 0, 0) # 1 day + 1 hour
+```
+
+→ 4,892,713 résultats
+
+
+
+La même chose sur les **stations d’arrivée** :
+
+```sql
+WITH stations_coord AS
+  (SELECT
+    list.ID,
+    list.Station_Name,
+    list.Latitude,
+    list.Longitude
+  FROM
+    stations.stations_list AS list
+  JOIN
+    stations.stations_summary AS summary
+  ON
+    list.ID = summary.station_ID
+  )
+
+SELECT
+  merge_data.ride_id,
+  merge_data.end_station_name,
+  merge_data.end_lat,
+  merge_data.end_lng,
+  stations_coord.Station_Name,
+  stations_coord.Latitude,
+  stations_coord.Longitude
+FROM
+  cyclistic_merge_data.full_data AS merge_data
+JOIN
+  stations_coord
+ON
+  stations_coord.Station_Name = merge_data.end_station_name
+WHERE
+  end_lat > 0
+  AND end_lng < 0
+  AND ended_at > started_at
+  AND ended_at - started_at <= MAKE_INTERVAL(0, 0, 1, 1, 0, 0) # 1 day + 1 hour
+```
+
+→ 4,843,419 résultats
+
+
+Il me faut à présent décider de comment extraire les données pour répondre à la question de l’analyse géographique des trajets.
+
+Il faut conserver des données originales les noms des stations de départ et d’arrivée mais pas les coordonnées géographiques, que je récupérerai à l’aide de la table `stations.stations_list`.
+Je pourrai donc faire une agrégation sur la base des noms de stations.
+
+
+Pour simplifier les requêtes à venir, je crée une nouvelle table `stations.stations_valid` avec la correspondance entre les noms originaux et les noms officiels, et avec les coordonnées géographiques des stations :
+
+```sql
+SELECT
+  summary.station_name AS original_name,
+  list.Station_Name AS official_name,
+  list.Latitude AS latitude,
+  list.Longitude AS longitude
+FROM
+  stations.stations_summary AS summary
+JOIN
+  stations.stations_list AS list
+ON
+  summary.station_ID = list.ID
+```
+
+La table créée contient 1587 entrées : 1587 valeurs distinctes dans le champ `original_name` et 1369 dans le champ `official_name`.
+
+
+### <ul><li>Aggrégation des données correspondant aux situations choisies</ul></li>
+J’ai normalement tous les éléments en main pour effectuer l’analyse géographique des trajets dans les cas de figure considérés : en semaine à 8h, 12h, 17h et le samedi à 15h.
+
+Je peux extraire les données agrégées pour ces 4 situations via la requête suivante :
+
+```sql
+WITH tmp AS (
+  SELECT
+    clean.ride_id,
+    MAKE_INTERVAL(hour => CAST(SPLIT(duration,':')[0] AS INT64),
+      minute => CAST(SPLIT(duration,':')[1] AS INT64),
+      second => CAST(SPLIT(duration,':')[2] AS INT64))
+      AS duration_interval,
+    st_start.official_name AS start_station,
+    st_end.official_name AS end_station
+  FROM
+    cyclistic_clean_data.clean_data AS clean
+  JOIN cyclistic_merge_data.full_data AS merged ON clean.ride_id = merged.ride_id
+  JOIN stations.stations_valid AS st_start ON st_start.original_name = merged.start_station_name
+  JOIN stations.stations_valid AS st_end ON st_end.original_name = merged.end_station_name
+)
+
+SELECT
+  user_type,
+  rideable_type,
+  EXTRACT(MONTH FROM start_time + duration_interval / 2) AS month,
+  EXTRACT(DAYOFWEEK FROM start_time + duration_interval / 2) AS day,
+  EXTRACT(HOUR FROM start_time + duration_interval / 2) AS hour,
+  COUNT(clean_data.ride_id) AS n_of_rides,
+  ROUND(AVG(UNIX_SECONDS(start_time + duration_interval) - UNIX_SECONDS(start_time)),3) AS mean_duration_s,
+  ROUND(AVG(
+    ST_DISTANCE(
+      ST_GEOGPOINT(start_lng, start_lat),
+      ST_GEOGPOINT(end_lng, end_lat))
+    ), 1) AS mean_distance_m,
+  start_station,
+  end_station
+FROM
+  cyclistic_clean_data.clean_data as clean_data
+JOIN
+  tmp
+ON
+  tmp.ride_id = clean_data.ride_id
+WHERE
+  (EXTRACT(HOUR FROM start_time + duration_interval / 2) IN (8,12,17)
+  AND EXTRACT(DAYOFWEEK FROM start_time + duration_interval / 2) IN (2,3,4,5,6))
+  OR
+  (EXTRACT(HOUR FROM start_time + duration_interval / 2) = 15
+  AND EXTRACT(DAYOFWEEK FROM start_time + duration_interval / 2) = 7)
+GROUP BY
+  user_type,
+  rideable_type,
+  month,
+  day,
+  hour,
+  start_station,
+  end_station
+ORDER BY
+  user_type,
+  rideable_type,
+  month,
+  day,
+  hour,
+  start_station,
+  end_station
+```
+
+Cette requête retourne 648 798 entrées.
+
+
+
+
+Pour commencer l’exploration des données, je scinde les données pour chaque situation. J’enregistre au préalable le résultat comprenant toutes les situations dans une nouvelle table `cyclistic_specific_data.all_situations`.
+
+
+
+
+#### _Samedis à 15h :_
+
+```sql
+SELECT
+  *
+FROM
+  cyclistic_specific_data.all_situations
+WHERE
+  hour = 15
+```
+
+41 665 entrées (pour un total de 52 564 trajets).
+
+
+
+
+#### _Jours de semaine à 8h :_
+
+```sql
+SELECT
+  *
+FROM
+  cyclistic_specific_data.all_situations
+WHERE
+  hour = 8
+```
+
+170 510 entrées (pour 207 929 trajets).
+
+
+
+
+#### _Jours de semaine à 12h :_
+
+```sql
+SELECT
+  *
+FROM
+  cyclistic_specific_data.all_situations
+WHERE
+  hour = 12
+```
+
+132 674 entrées (total de 154 684 trajets).
+
+
+
+
+#### _Jours de semaine à 17h :_
+
+```sql
+SELECT
+  *
+FROM
+  cyclistic_specific_data.all_situations
+WHERE
+  hour = 17
+```
+
+303 949 entrées (total 359 690 trajets)
 
 
