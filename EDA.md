@@ -68,7 +68,7 @@ Pour les abonnés annuels, l’utilisation est plus équilibrée entre vélos é
 Je rajoute dans la table deux colonnes pour afficher les noms de jours de la semaine et des mois de l’année, grâce à `VLOOKUP` :
 - je crée une nouvelle feuille `days month for VLOOKUP`
 - pour extraire les noms des mois : `= VLOOKUP(C2, 'days month for VLOOKUP'!C:D, 2)`
-- pour extraire les noms des jours : `=VLOOKUP(D2, 'days month for VLOOKUP'!A:B, 2)`
+- pour extraire les noms des jours : `= VLOOKUP(D2, 'days month for VLOOKUP'!A:B, 2)`
 
 Je crée ensuite un tableau croisé dynamique avec `user_type` et `rideable_type` en Lignes, `day_id` et `day` en Colonnes, et `n_of_rides` en Valeurs.
 
