@@ -74,10 +74,10 @@ Je crée ensuite un tableau croisé dynamique avec `user_type` et `rideable_type
 
 *NB :* `day_id` *et* `day` *sont nécessaires si on veut pouvoir afficher les jours de la semaine dans l’ordre (*`day_id` *étant ajouté en premier, c’est lui qui prime pour l’ordre, et* `day` *permet d’afficher le nom du jour correspondant).*
 
-<img src="img/EDA/Number of rides depending on user type.png" width=40%>
+<img src="img/EDA/Number of rides depending on user type.png" width=70%>
 
-<img src="img/EDA/Number of rides for members.png" width=40%>
-<img src="img/EDA/Number of rides for casual users.png" width=40%>
+<img src="img/EDA/Number of rides for members.png" width=70%>
+<img src="img/EDA/Number of rides for casual users.png" width=70%>
 
 
 ### <ul><li>Durée moyenne des trajets</ul></li>
@@ -87,10 +87,10 @@ Je crée ensuite un tableau croisé dynamique avec `user_type` et `rideable_type
 
 *NB : Comme précédemment,* `day_id` *et* `day` *sont nécessaires si on veut pouvoir afficher les jours de la semaine dans l’ordre (*`day_id` *étant ajouté en premier, c’est lui qui prime pour l’ordre, et* `day` *permet d’afficher le nom du jour correspondant).*
 
-<img src="img/EDA/Daily average of ride duration depending on user type.png" width=40%>
+<img src="img/EDA/Daily average of ride duration depending on user type.png" width=70%>
 
-<img src="img/EDA/Daily average of ride duration for members.png" width=40%>
-<img src="img/EDA/Daily average of ride duration for casual users.png" width=40%>
+<img src="img/EDA/Daily average of ride duration for members.png" width=70%>
+<img src="img/EDA/Daily average of ride duration for casual users.png" width=70%>
 
 
 ### <ul><li>Résultat des observations nombre et durée des trajets selon les jours de la semaine</ul></li>
@@ -120,14 +120,14 @@ Je crée un Tableau croisé dynamique pour synthétiser les données, avec `user
 
 *NB : Comme pour `day` et `day_id`, il faut utiliser `month_id` pour ordonner correctement `month`.*
 
-<img src="img/EDA/Average distance by ride depending on user type.png" width=40%>
+<img src="img/EDA/Average distance by ride depending on user type.png" width=70%>
 
 La distance moyenne des trajets est très proche entre les utilisateurs occasionnels (1982.0 m) et les abonnés annuels (2006.6 m). De même, aucune différence nette n’est visible entre les deux types d’utilisateurs selon les jours de la semaine (à 60 m près ce qui apparaît négligeable).
 
 On peut faire les mêmes observations selon les mois de l'année :
 
-<img src="img/EDA/Average distance by ride for members.png" width=40%>
-<img src="img/EDA/Average distance by ride for casual users.png" width=40%>
+<img src="img/EDA/Average distance by ride for members.png" width=70%>
+<img src="img/EDA/Average distance by ride for casual users.png" width=70%>
 
 En revanche, on constate qu’il existe une **saisonnalité** des distances parcourues : elles sont plus importantes au printemps et en été (> 2000 m) qu’en automne et en hiver (< 2000 m).
 
@@ -148,9 +148,9 @@ Je modifie ensuite les paramètres du tableau croisé dynamique avec `user_type`
 ## Tendances selon les mois de l'année
 ### <ul><li>En fonction du type d'utilisateur</ul></li>
 
-<img src="img/EDA/Number of rides per month depending on user type.png" width=40%>
-<img src="img/EDA/Average ride duration depending on user type.png" width=40%>
-<img src="img/EDA/Average distance by ride per month depending on user type.png" width=40%>
+<img src="img/EDA/Number of rides per month depending on user type.png" width=70%>
+<img src="img/EDA/Average ride duration depending on user type.png" width=70%>
+<img src="img/EDA/Average distance by ride per month depending on user type.png" width=70%>
 
 On confirme bien que la saison modifie profondément l’utilisation des vélos :
 - Le nombre de trajets mensuels chute considérablement pendant l’hiver (particulièrement rude à Chicago), d’un facteur 3.2 pour les membres et d’un facteur 9.0 pour les utilisateurs occasionnels.
@@ -161,10 +161,10 @@ Est-ce que cet impact est différent selon le type de vélo emprunté ?
 
 
 ### <ul><li>En fonction du type de vélo</ul></li>
-<img src="img/EDA/Number of rides per month for members.png" width=40%>
-<img src="img/EDA/Number of rides per month for casual users.png" width=40%>
-<img src="img/EDA/Average ride duration for members.png" width=40%>
-<img src="img/EDA/Average ride duration for casual users.png" width=40%>
+<img src="img/EDA/Number of rides per month for members.png" width=70%>
+<img src="img/EDA/Number of rides per month for casual users.png" width=70%>
+<img src="img/EDA/Average ride duration for members.png" width=70%>
+<img src="img/EDA/Average ride duration for casual users.png" width=70%>
 
 On ne constate pas de différence significative selon le type de vélo emprunté par rapport à la tendance générale
 
