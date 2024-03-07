@@ -187,3 +187,85 @@ On peut effectuer une cartographie des données grâce à une mise en forme cond
 
 On observe ainsi que durant les 3 mois d’hiver (décembre, janvier, février), les abonnés maintiennent une utilisation plus importante sur les jours de semaine (i.e. du lundi au vendredi) que durant les week-ends. A l’inverse, les utilisateurs occasionnels sont très peu actifs quels que soient les jours de la semaine.
 
+
+
+
+
+## Analyse des trajets selon l’heure de la journée
+L’objectif est de confirmer l’hypothèse que les abonnés annuels utilisent davantage les vélos pour leurs trajets domicile-travail.
+
+Il faut donc extraire l’heure médiane (milieu entre l’heure de début et l’heure de fin) pour chaque trajet, puis regrouper les trajets par tranche horaire.
+
+Dans BigQuery, cela se traduit par la requête suivante avec une **CTE** (table d'expression commune) :
+```sql
+WITH tmp AS (
+  SELECT
+    ride_id,
+    MAKE_INTERVAL(hour => CAST(SPLIT(duration,':')[0] AS INT64),
+      minute => CAST(SPLIT(duration,':')[1] AS INT64),
+      second => CAST(SPLIT(duration,':')[2] AS INT64))
+      AS duration_interval
+  FROM
+    cyclistic_clean_data.clean_data
+)
+
+SELECT
+  user_type,
+  rideable_type,
+  EXTRACT(MONTH FROM start_time + duration_interval / 2) AS month,
+  EXTRACT(DAYOFWEEK FROM start_time + duration_interval / 2) AS day,
+  EXTRACT(HOUR FROM start_time + duration_interval / 2) AS hour,
+  COUNT(clean_data.ride_id) AS n_of_rides,
+  ROUND(AVG(UNIX_SECONDS(start_time + duration_interval) - UNIX_SECONDS(start_time)),3) AS mean_duration_s,
+  ROUND(AVG(
+    ST_DISTANCE(
+      ST_GEOGPOINT(start_lng, start_lat),
+      ST_GEOGPOINT(end_lng, end_lat))
+    ), 1) AS mean_distance_m
+FROM
+  cyclistic_clean_data.clean_data as clean_data
+JOIN
+  tmp
+ON
+  tmp.ride_id = clean_data.ride_id
+GROUP BY
+  user_type,
+  rideable_type,
+  month,
+  day,
+  hour
+ORDER BY
+  user_type,
+  rideable_type,
+  month,
+  day,
+  hour
+```
+
+J’enregistre les résultats de la requête dans un fichier Sheets.
+
+Je renomme les mois et jours en `month_id` et `day_id` puis crée les colonnes `mmm yy = DATE(IF(C2<8,"2023","2022"),C2,1))` et `day = VLOOKUP(D2,'days for VLOOKUP'!$A$2:$B$8,2))`.
+
+J’explore maintenant les données grâce à un tableau croisé dynamique avec en Valeurs `n_of_rides` et en Colonnes `hour`.
+
+Je m’aperçois qu’une séparation des jours à minuit n’est pas la plus pertinente pour une visualisation des données car on voit bien que l’utilisation du samedi par exemple se prolonge jusque tard dans la nuit. En visualisant toutes les données, on voit que 4h du matin serait une meilleure heure pour séparer les jours.
+
+Par conséquent, je fais les modifications suivantes :
+- création d’une colonne `day_id (corr) = IF(E2<4, IF(D2=1, 7, D2-1), D2)`
+- création d’une colonne `day (corr) = VLOOKUP(H2,'days for VLOOKUP'!$A$2:$B$8, 2)`
+- création d’une colonne `hour_string = TEXT(TIME(E2, 0, 0), "hh:mm")` pour l’affichage des valeurs sur l’axe *x*
+- création d’une colonne `hour_index = IF(E2>=4, E2, E2+24)` pour que l’axe *x* soit dans l’ordre chronologique i.e. 24h de 04:00 à 03:00
+- dans le tableau croisé dynamique, je mets en Colonnes `hour_index` (pour l’ordre chronologique) et `hour_string` (pour l’affichage sur l’axe *x*).
+
+Je peux maintenant commencer l’analyse des données.
+
+
+
+
+
+
+
+
+### <ul><li>Nombre de trajets</ul></li>
+
+
