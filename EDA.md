@@ -95,7 +95,7 @@ FROM cyclistic_merge_data.full_data
 La requête retourne 5 723 606 ce qui est le nombre d'entrées dans la table : il n'y a donc pas de doublon à supprimer.
 
 ## Vérification du contenu des colonnes
-### rideable_type
+### <ul><li>rideable_type</ul></li>
 Trois types de vélos sont disponibles à la location : classique, électrique et cargo.
 ```sql
 SELECT
@@ -110,7 +110,7 @@ GROUP BY
 
 Le résultat de la requête est conforme (trois types de vélos) et il n'y a pas de valeurs nulles.
 
-### started_at
+### <ul><li>started_at</ul></li>
 ```sql
 SELECT
   COUNT(started_at) AS n_of_rides,
@@ -125,7 +125,7 @@ WHERE
 
 Le nombre de trajets dont la date de départ existe correspond au nombre d’enregistrements dans la table. Le minimum et le maximum de la date de départ correspondent bien à la période étudiée (01/08/2022 - 31/07/2023).
 
-### ended_at
+### <ul><li>ended_at</ul></li>
 ```sql
 SELECT
   COUNT(ended_at) AS n_of_rides,
@@ -148,7 +148,7 @@ FROM
 WHERE
   ended_at >= DATETIME("2023-08-01T00:00:00")
 ```
-![query result](img/ended_at_aug23.png)
+![query result](img/ended_at__aug23.png)
 
 
 Il faut également vérifier que ended_at est cohérent chronologiquement avec started_at :
@@ -160,7 +160,7 @@ FROM
 WHERE
   ended_at <= started_at
 ```
-![query result](img/ended_at_anachronism.png)
+![query result](img/ended_at__anachronism.png)
 
 715 enregistrements ne sont pas cohérents chronologiquement.
 En fait, il y a parmi ces résultats une majorité de durées nulles :
@@ -172,7 +172,7 @@ FROM
 WHERE
   ended_at = started_at
 ```
-![query result](img/ended_at_null_duration.png)
+![query result](img/ended_at__null_duration.png)
 
 C’est assez surprenant car d'après ce qu'indique la source des données : _“The data has been processed to remove trips that are taken by staff as they service and inspect the system; and any trips that were below 60 seconds in length (potentially false starts or users trying to re-dock a bike to ensure it was secure).”_ De tels enregistrements avec une durée nulle ne devraient donc pas être présents.
 Il faut donc supprimer ces entrées dans la table.
@@ -184,7 +184,7 @@ SELECT
 FROM
   cyclistic_merge_data.full_data
 ```
-![query result](img/ended_at_longest.png)
+![query result](img/ended_at__longest.png)
 
 Le trajet le plus long dans les données non-nettoyées a par exemple duré plus de 35 jours !
 Il faut donc définir à partir de quel moment une location est considérée comme faussée, et quel nombre de trajets sont concernés par ces longues durées.
@@ -249,7 +249,7 @@ ORDER BY
 
 </details>
 
-![query result](img/ended_at_ride_distribution_vs_duration.png)
+![query result](img/ended_at__ride_distribution_vs_duration.png)
 
 On a alors deux options :
 - supprimer les 11 trajets dont la durée est supérieure à 24 h (i.e. trajets pour lesquels n_of_rides = 1) en considérant qu’ils sont une anomalie,
@@ -261,7 +261,7 @@ _NB : En situation réelle, il faudrait échanger avec les partenaires pour comp
 
 
 
-### start_lat, start_lng
+### <ul><li>start_lat, start_lng</ul></li>
 Il s'agit des coordonnées géographiques (latitude, longitude) des stations de départ.
 
 _NB : Je choisis de ne considérer que les coordonnées géographiques des enregistrements (latitude, longitude) plutôt que les noms et identifiants des stations. Je verrai plus tard que ce n’était pas la bonne méthode étant donné que les coordonnées ne sont pas toutes renseignées avec le même degré de précision…_
@@ -290,12 +290,13 @@ SELECT
 FROM
   cyclistic_merge_data.full_data
 ```
-![query result](img/start_coord_check.png)
+![query result](img/start_coord__check.png)
+
 Les latitudes et les longitudes de départ sont cohérentes, pas de valeur à exclure.
 
 
 
-### end_lat, end_lng
+### <ul><li>end_lat, end_lng</ul></li>
 Ce sont les coordonnées géographiques des stations d'arrivée.
 ```sql
 SELECT
@@ -321,7 +322,7 @@ SELECT
 FROM
   cyclistic_merge_data.full_data
 ```
-![query result](img/end_coord_check.png)
+![query result](img/end_coord__check.png)
 
 Certaines coordonnées géographiques sont égales à 0, ce qui est incohérent d'un point de vue géographique.
 
@@ -338,7 +339,7 @@ WHERE
   OR end_lat IS NULL
   OR end_lng IS NULL
 ```
-![query result](img/end_coord_delete.png)
+![query result](img/end_coord__delete.png)
 
 Cela représente 6112 enregistrements à supprimer. Sur le nombre total d’enregistrements, c’est tout à fait négligeable.
 
@@ -358,13 +359,13 @@ WHERE
   end_lat > 0
   AND end_lng < 0
 ```
-![query result](img/end_coord_delete_check.png)
+![query result](img/end_coord__delete_check.png)
 
 Les valeurs sont désormais cohérentes géographiquement, il n’y a pas de valeurs supplémentaires à supprimer.
 
 
 
-### member_casual
+### <ul><li>member_casual</li></ul>
 Il s'agit du type d'utilisateur : occasionnel ou abonné annuel.
 
 ```sql
