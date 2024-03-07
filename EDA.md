@@ -281,6 +281,7 @@ On considère les mois où l’utilisation est la plus faible : décembre, janvi
 Durant l’hiver, les utilisateurs occasionnels réduisent fortement l’utilisation pour les loisirs.
 
 On remarque même une situation encore plus marquée sur le mois de décembre : 
+
 <img src="img/EDA/Hourly number of rides in December for members.png" width=70%>
 <img src="img/EDA/Hourly number of rides in December for casual users.png" width=70%>
 
@@ -288,7 +289,6 @@ On remarque même une situation encore plus marquée sur le mois de décembre :
 #### *Eté*
 NB : Je ne considère pas le mois d’août pour faire la somme car il s’agit d’août 2022, il n’y aurait donc pas de continuité temporelle entre les données avec les mois de juin et juillet 2023.
 
-Pendant l’été 2023 (juin, juillet) :
 <img src="img/EDA/Hourly number of rides in Summer for members.png" width=70%>
 <img src="img/EDA/Hourly number of rides in Summer for casual users.png" width=70%>
 
@@ -297,6 +297,7 @@ On observe les mêmes différences selon le type d’utilisateurs. L’utilisati
 
 ### <ul><li>Distance moyenne parcourue</ul></li>
 Pour finir, on regarde si l’on voit des profils horaires significatifs en ce qui concerne les distances parcourues par trajet (i.e. distances séparant les stations de départ et d’arrivée) :
+
 <img src="img/EDA/Hourly average ride distance for members.png" width=70%>
 <img src="img/EDA/Hourly average ride distance for casual users.png" width=70%>
 
@@ -307,6 +308,7 @@ Durant les week-ends, les trajets sont plus longs en journée, en comparaison av
 Il serait intéressant de regarder la localisation des stations de départ et d’arrivée dans des cas précis :
 - en semaine à 8h, 12h, 17h
 - le samedi à 15h
+
 et essayer de corréler ces données avec les données géographiques et économiques : localisation de zones de bureaux, de zones commerciales/de restauration, de zones résidentielles et prendre en compte les plateformes multimodales (train, métro).
 
 
@@ -377,10 +379,11 @@ Cela représente une fraction très importante des données nettoyées : **1 376
 
 C’est particulièrement surprenant car dans l’étape de nettoyage des données, j’ai supprimé les données pour lesquelles les coordonnées géographiques sont nulles ou égales à zéro (et cela ne représentait que 6112 enregistrements). Il y a donc un très grand nombre d’enregistrements pour lesquels des coordonnées géographiques sont renseignées mais pas les noms de station. 
 
-_Dans une situation réelle, il faudrait trouver la raison pour laquelle on a ces enregistrements : s’agit-il d’un bug du système qui ne renseigne pas les stations correctement ? est-ce que cela correspond à des vélos qui seraient retrouvés en-dehors des stations ??_
+> _Dans une situation réelle, il faudrait trouver la raison pour laquelle on a ces enregistrements : s’agit-il d’un bug du système qui ne renseigne pas les stations correctement ? est-ce que cela correspond à des vélos qui seraient retrouvés en-dehors des stations ??_
 
 
 ### <ul><li>Identification des stations de départ et arrivée</ul></li>
+
 J’essaie sur les enregistrements restants d’identifier correctement les stations de départ et d’arrivée. Problème : les identifiants des stations dans la table des trajets ne correspondent pas aux identifiants officiels des stations, il est donc impossible de les utiliser. J’essaye donc de me baser sur les noms des stations et j’explore les données pour voir quels sont les problèmes dans les noms de stations par rapport aux noms officiels. Si je ne fais pas cette étape, je ne pourrai pas arriver à une visualisation de la géographie des trajets car il me sera impossible de faire une agrégation par station.
 
 Je crée une table `stations.stations_summary` avec les noms de stations tels qu’ils existent en tant que `start_station_name` des données originales et la correspondance `ID` issue de la liste officielle des stations du portail open data de la ville de Chicago. Pour créer cette table, j’ai inspecté minutieusement les noms des stations et corrigé ce qui pouvait l’être. Lorsque j’importe la table dans BigQuery, je rends les champs `station_name` et `station_ID` requis ce qui supprime d’office les éventuelles valeurs nulles.
@@ -496,6 +499,7 @@ La table créée contient 1587 entrées : 1587 valeurs distinctes dans le champ 
 
 
 ### <ul><li>Aggrégation des données correspondant aux situations choisies</ul></li>
+
 J’ai normalement tous les éléments en main pour effectuer l’analyse géographique des trajets dans les cas de figure considérés : en semaine à 8h, 12h, 17h et le samedi à 15h.
 
 Je peux extraire les données agrégées pour ces 4 situations via la requête suivante :
