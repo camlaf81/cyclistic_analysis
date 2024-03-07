@@ -161,8 +161,11 @@ Est-ce que cet impact est différent selon le type de vélo emprunté ?
 
 
 ### <ul><li>En fonction du type de vélo</ul></li>
+#### *Number of rides*
 <img src="img/EDA/Number of rides per month for members.png" width=70%>
 <img src="img/EDA/Number of rides per month for casual users.png" width=70%>
+
+#### *Ride duration*
 <img src="img/EDA/Average ride duration for members.png" width=70%>
 <img src="img/EDA/Average ride duration for casual users.png" width=70%>
 
