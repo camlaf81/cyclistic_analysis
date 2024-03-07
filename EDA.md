@@ -422,6 +422,7 @@ FROM(
 ```
 ![query result](img/interval__work.png)
 
+Les heures, minutes, secondes sont bien séparées et correctement formatées.
 
 Pour maintenant en faire une `STRING` avec chaque valeur séparée par `:` comme on l’attend pour l’affichage d’une durée :
 
@@ -447,6 +448,9 @@ FROM(
 )
 ```
 ![query result](img/interval__result.png)
+
+Le résultat est conforme au formatage attendu.
+
 
 
 ### Requête complète pour la création de la table des données nettoyées
