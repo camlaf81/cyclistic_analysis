@@ -133,8 +133,11 @@ En revanche, on constate qu’il existe une **saisonnalité** des distances parc
 
 
 > NB : Pour pouvoir tracer les données annuelles par ordre chronologique, i.e. Aug 22 - Jul 23 (et non January-December qui ne correspond pas à l’enchaînement réel des données), je crée finalement une colonne `mmm yy` grâce à la formule :
+>
 > `=DATE(IF(C2<8,"2023","2022"),C2,1)`
+>
 > où `DATE` prend 3 arguments : année, mois, jour
+>
 >   `IF` conditionne l’année sur la base de la valeur de `month_id`
 >
 > *Pour rappel `IF(condition, value if True, value if False)`.*
@@ -388,7 +391,7 @@ J’essaie sur les enregistrements restants d’identifier correctement les stat
 
 Je crée une table `stations.stations_summary` avec les noms de stations tels qu’ils existent en tant que `start_station_name` des données originales et la correspondance `ID` issue de la liste officielle des stations du portail open data de la ville de Chicago. Pour créer cette table, j’ai inspecté minutieusement les noms des stations et corrigé ce qui pouvait l’être. Lorsque j’importe la table dans BigQuery, je rends les champs `station_name` et `station_ID` requis ce qui supprime d’office les éventuelles valeurs nulles.
 
-En complément, j’importe la table de la liste officielle des stations trouvée sur le portail open data de la ville de Chicago : `table stations.stations_list`.
+En complément, j’importe la table de la liste officielle des stations trouvée sur le portail open data de la ville de Chicago : table `stations.stations_list`.
 
 J’essaie de faire un `JOIN` sur les **stations de départ** pour vérification :
 
