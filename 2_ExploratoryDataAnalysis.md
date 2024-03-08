@@ -275,7 +275,7 @@ Pour les **utilisateurs occasionnels**, on voit également un profil avec des pi
 
 
 ### <ul><li>Evaluation de l'impact des saisons</ul></li>
-On considère les mois où l’utilisation est la plus faible : décembre, janvier et février (hiver) et les mois où elle est la plus élevée : juin, juillet, août (été). Les données sont donc sommées sur trois mois.
+On considère les mois où l’utilisation est la plus faible : décembre, janvier et février (hiver) et les mois où elle est la plus élevée : juin, juillet, août (été). Les données sont donc sommées sur ces mois.
 
 #### *Hiver*
 <img src="img/EDA/Hourly number of rides during Winter for members.png" width=70%>
